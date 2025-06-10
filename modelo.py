@@ -186,10 +186,10 @@ def resolver_planificacion_turnos(
     # un_franco: forall <e> in Empleados: sum <m> in Dias: w[m, e] >= 1;
     # Cada empleado debe tener al menos un día de descanso (w[m,e] == 1) a la semana.
     for e in empleados:
-        prob += lpSum(w[m][e] for m in days) <= cantidad_de_francos, f"Al_menos_un_franco_{e}"
+        prob += lpSum(w[m][e] for m in days) >= cantidad_de_francos, f"Al_menos_un_franco_{e}"
 
     for e in empleados:
-        prob += lpSum(z[m][e] for m in days) >= cantidad_de_dobles, f"Al_menos_un_doble_{e}"
+        prob += lpSum(z[m][e] for m in days) <= cantidad_de_dobles, f"Al_menos_un_doble_{e}"
 
 
     # --- Restricciones de CUBRIR ROLES (V) ---
