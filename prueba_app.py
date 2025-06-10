@@ -349,6 +349,16 @@ if st.button("Ejecutar Planificación"):
                 st.error(f"Ocurrió un error al ejecutar el modelo: {e}. Por favor, verifica tus datos de entrada y el archivo `modelo.py`.")
 
 
+
+
+st.markdown("""
+<div style="background-color:#f0f2f6; padding:15px; border-radius:10px; text-align:center;">
+    Si tienes alguna duda sobre el uso, encontraste un error o quieres hacer un comentario,
+    no dudes en contactarnos: <a href="mailto:info@bonanza.com.ar">info@bonanza.com.ar</a>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("---")
 # st.subheader("Resumen de la Configuración:")
 # st.markdown("Aquí puedes ver el contenido de todas las tablas que has configurado:")
 
