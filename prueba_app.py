@@ -354,7 +354,7 @@ if st.button("Ejecutar Planificación"):
 st.markdown("""
 <div style="background-color:#f0f2f6; padding:15px; border-radius:10px; text-align:center;">
     Si tienes alguna duda sobre el uso, encontraste un error o quieres hacer un comentario,
-    no dudes en contactarnos: <a href="mailto:info@bonanza.com.ar">info@bonanza.com.ar</a>
+    no dudes en contactarnos: <a href="mailto:info@bonanzasol.com.ar">info@bonanzasol.com.ar</a>
 </div>
 """, unsafe_allow_html=True)
 
