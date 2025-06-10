@@ -10,7 +10,9 @@ def resolver_planificacion_turnos(
     preferencias_df: pd.DataFrame,         # Datos de la Sección 4 (Horarios Disponibles de Empleados)
     requisitos_roles_df: pd.DataFrame,     # Datos de la Sección 5 (Requisitos de Roles por Turno)
     turnos_deseados_df: pd.DataFrame,      # Datos de la Sección 6 (Turnos Deseados por Empleado)
-    total_requerimientos_df: pd.DataFrame  # Datos de la Sección 7 (Requisitos Totales de Empleados por Turno)
+    total_requerimientos_df: pd.DataFrame,  # Datos de la Sección 7 (Requisitos Totales de Empleados por Turno)
+    cantidad_de_francos: int = 1, # Cantidad de días de descanso por empleado (default: 1)
+    cantidad_de_dobles: int = 1   # Cantidad de días con doble turno por empleado (default: 1)
 ):
     """
     Construye y resuelve el modelo de planificación de turnos utilizando PuLP.
@@ -175,7 +177,6 @@ def resolver_planificacion_turnos(
             prob += y[m][e] <= (x[t_tm_str][e] + x[t_tt_str][e]), f"TrabajaDia_def_2_{m}_{e}"
 
 
-
     # ligar_variable3: y[m, e] + w[m, e] == 1;
     # w[m,e] es 1 si el empleado E descansa el día 'm'.
     for m in days:
@@ -185,7 +186,10 @@ def resolver_planificacion_turnos(
     # un_franco: forall <e> in Empleados: sum <m> in Dias: w[m, e] >= 1;
     # Cada empleado debe tener al menos un día de descanso (w[m,e] == 1) a la semana.
     for e in empleados:
-        prob += lpSum(w[m][e] for m in days) >= 1, f"Al_menos_un_franco_{e}"
+        prob += lpSum(w[m][e] for m in days) <= cantidad_de_francos, f"Al_menos_un_franco_{e}"
+
+    for e in empleados:
+        prob += lpSum(z[m][e] for m in days) >= cantidad_de_dobles, f"Al_menos_un_doble_{e}"
 
 
     # --- Restricciones de CUBRIR ROLES (V) ---

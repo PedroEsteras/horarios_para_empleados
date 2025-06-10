@@ -2,28 +2,63 @@ import streamlit as st
 import pandas as pd
 from pulp import * # Se ha descomentado la importación de PuLP
 from modelo import resolver_planificacion_turnos # Asegúrate de que modelo.py está en el mismo directorio
+from PIL import Image
+
+
 
 st.set_page_config(layout="wide")
 
+imagen = Image.open("logo_grande.png")
+
+col1, col2, col3 = st.columns([1, 1, 1])  # la del medio es más ancha
+with col1:
+    st.image(imagen, width=200)
+
+st.markdown(
+'<a href="https://www.bonanzasol.com.ar" target="_blank">www.bonanzasol.com.ar</a>',
+unsafe_allow_html=True
+)
+
 st.title("Sistema de Planificación de Turnos para tu Comercio")
 st.markdown("""
+El sistema esta destinado a comercios que trabajan todos los dias de la semana, con dos turnos por dia.
+
+
 Esta aplicación te permite configurar los datos iniciales para la planificación de turnos.
 Luego, podrás ejecutar el **modelo de optimización** para generar una propuesta de horarios.
 
-**Pasos:**
+**Pasos:**\n
+0. **Cantidad minima de feriados y cantidad maxima de turnos dobles por empleado**: Define las restricciones de feriados y turnos dobles.
 1.  **Nombres de los Empleados**: Define tu personal.
 2.  **Tipos de Roles**: Lista las funciones en tu comercio.
 3.  **Asignación de Roles por Empleado**: Indica qué roles puede desempeñar cada empleado.
 4.  **Horarios Disponibles de Empleados**: Registra las preferencias de cada empleado por turno.
 5.  **Requisitos de Roles por Turno**: Especifica la cantidad de empleados por rol en cada turno.
 6.  **Turnos Deseados por Empleado**: Define cuántos turnos debe hacer cada empleado.
-7.  **Requisitos Totales de Empleados por Turno**: Indica el personal total necesario en cada turno.
+7.  **Requisitos Totales de Empleados por Turno**: Indica el personal total necesario en cada turno.\n
 """)
 
-st.sidebar.header("Navegación")
-# Para una mejor organización con múltiples secciones, se pueden usar expanders o un menú de sidebar.
-# Por ahora, mantendremos las secciones una debajo de la otra.
 
+
+st.header("0. Cantidad de Feriados y Turnos Dobles")
+st.markdown("Por favor, ingresa el número de minimo de feriados y maximo de doble turno por empleado.")
+
+
+feriados = st.number_input(
+    "Cantidad mínima de feriados por empleado",
+    min_value=0,
+    value=1,
+    step=1,
+    help="Define la cantidad mínima de días feriados que debe tener cada empleado."
+)
+
+dobles = st.number_input(
+    "Cantidad máxima de turnos dobles por empleado",
+    min_value=0,
+    value=1,
+    step=1,
+    help="Define la cantidad máxima de turnos dobles permitidos para cada empleado."
+)
 
 st.header("1. Nombres de los Empleados")
 st.markdown("Por favor, ingresa el número de empleados y sus nombres.")
@@ -31,10 +66,13 @@ st.markdown("Por favor, ingresa el número de empleados y sus nombres.")
 num_employees = st.number_input(
     "Número de Empleados",
     min_value=1,
-    value=3,
+    value=2,
     step=1,
     help="Define cuántos empleados quieres ingresar."
 )
+
+
+
 
 employee_names = []
 for i in range(int(num_employees)):
@@ -53,7 +91,7 @@ st.markdown("Lista los roles disponibles, uno por línea.")
 
 roles_raw = st.text_area(
     "Lista de Roles (uno por línea)",
-    "Encargado\nCajero\nMozo\nCafe\nSeguridad\nRepositor",
+    "Encargado\nCajero\nMozo",
     height=150,
     help="Escribe cada rol en una nueva línea (ej: Cajero, Repositor)."
 )
@@ -246,7 +284,9 @@ if st.button("Ejecutar Planificación"):
                     preferencias_df,
                     requisitos_roles_df,
                     turnos_deseados_df,
-                    total_requerimientos_df
+                    total_requerimientos_df,
+                    feriados,
+                    dobles
                 )
 
                 # Resolver el problema
@@ -309,88 +349,88 @@ if st.button("Ejecutar Planificación"):
                 st.error(f"Ocurrió un error al ejecutar el modelo: {e}. Por favor, verifica tus datos de entrada y el archivo `modelo.py`.")
 
 
-st.subheader("Resumen de la Configuración:")
-st.markdown("Aquí puedes ver el contenido de todas las tablas que has configurado:")
+# st.subheader("Resumen de la Configuración:")
+# st.markdown("Aquí puedes ver el contenido de todas las tablas que has configurado:")
 
-# --- Sección para imprimir tablas en la consola ---
-st.markdown("### Ver Tablas en la Consola (para depuración)")
-st.markdown("Haz clic en el botón para imprimir los datos de todas las tablas en la consola de tu terminal.")
+# # --- Sección para imprimir tablas en la consola ---
+# st.markdown("### Ver Tablas en la Consola (para depuración)")
+# st.markdown("Haz clic en el botón para imprimir los datos de todas las tablas en la consola de tu terminal.")
 
-if st.button("Imprimir Tablas en Consola"):
-    if 'employee_names' in st.session_state:
-        print("\n--- Empleados Registrados ---")
-        print(st.session_state['employee_names'])
+# if st.button("Imprimir Tablas en Consola"):
+#     if 'employee_names' in st.session_state:
+#         print("\n--- Empleados Registrados ---")
+#         print(st.session_state['employee_names'])
 
-    if 'roles' in st.session_state:
-        print("\n--- Roles Registrados ---")
-        print(st.session_state['roles'])
+#     if 'roles' in st.session_state:
+#         print("\n--- Roles Registrados ---")
+#         print(st.session_state['roles'])
 
-    if 'edited_assignment_df' in st.session_state and not st.session_state['edited_assignment_df'].empty:
-        print("\n--- Matriz de Habilidades (Asignación de Roles) ---")
-        print(st.session_state['edited_assignment_df'].T)
+#     if 'edited_assignment_df' in st.session_state and not st.session_state['edited_assignment_df'].empty:
+#         print("\n--- Matriz de Habilidades (Asignación de Roles) ---")
+#         print(st.session_state['edited_assignment_df'].T)
 
-    if 'edited_availability_df' in st.session_state and not st.session_state['edited_availability_df'].empty:
-        print("\n--- Preferencias de Horarios ---")
-        print(st.session_state['edited_availability_df'])
+#     if 'edited_availability_df' in st.session_state and not st.session_state['edited_availability_df'].empty:
+#         print("\n--- Preferencias de Horarios ---")
+#         print(st.session_state['edited_availability_df'])
 
-    if 'edited_role_requirements_df' in st.session_state and not st.session_state['edited_role_requirements_df'].empty:
-        print("\n--- Requisitos de Roles por Turno ---")
-        print(st.session_state['edited_role_requirements_df'].T)
+#     if 'edited_role_requirements_df' in st.session_state and not st.session_state['edited_role_requirements_df'].empty:
+#         print("\n--- Requisitos de Roles por Turno ---")
+#         print(st.session_state['edited_role_requirements_df'].T)
 
-    if 'edited_desired_shifts_df' in st.session_state and not st.session_state['edited_desired_shifts_df'].empty:
-        print("\n--- Turnos Deseados por Empleado ---")
-        print(st.session_state['edited_desired_shifts_df'])
+#     if 'edited_desired_shifts_df' in st.session_state and not st.session_state['edited_desired_shifts_df'].empty:
+#         print("\n--- Turnos Deseados por Empleado ---")
+#         print(st.session_state['edited_desired_shifts_df'])
 
-    if 'edited_total_requirements_df' in st.session_state and not st.session_state['edited_total_requirements_df'].empty:
-        print("\n--- Requisitos Totales de Empleados por Turno ---")
-        print(st.session_state['edited_total_requirements_df'])
-    st.success("Tablas impresas en la consola. ¡Revisa tu terminal!")
-# --- Fin de la impresión de tablas en la consola ---
-
-
-# Visualización de las tablas en la interfaz de usuario de Streamlit
-st.markdown("### Empleados Registrados:")
-if 'employee_names' in st.session_state and st.session_state['employee_names']:
-    st.dataframe(pd.DataFrame(st.session_state['employee_names'], columns=["Nombre del Empleado"]))
-else:
-    st.info("Por favor, ingresa los nombres de los empleados en la Sección 1.")
-
-st.markdown("### Roles Registrados:")
-if 'roles' in st.session_state and st.session_state['roles']:
-    st.dataframe(pd.DataFrame(st.session_state['roles'], columns=["Nombre del Rol"]))
-else:
-    st.info("Por favor, ingresa los roles en la Sección 2.")
-
-st.markdown("### Matriz de Habilidades (Asignación de Roles):")
-if 'edited_assignment_df' in st.session_state and not st.session_state['edited_assignment_df'].empty:
-    st.dataframe(st.session_state['edited_assignment_df'])
-else:
-    st.info("Completa la sección de asignación de roles (Sección 3) para ver la matriz de habilidades.")
-
-st.markdown("### Preferencias de Horarios:")
-if 'edited_availability_df' in st.session_state and not st.session_state['edited_availability_df'].empty:
-    st.dataframe(st.session_state['edited_availability_df'])
-else:
-    st.info("Completa la sección de horarios disponibles (Sección 4) para ver las preferencias.")
-
-st.markdown("### Requisitos de Roles por Turno:")
-if 'edited_role_requirements_df' in st.session_state and not st.session_state['edited_role_requirements_df'].empty:
-    st.dataframe(st.session_state['edited_role_requirements_df'])
-else:
-    st.info("Completa la sección de requisitos de roles por turno (Sección 5) para ver la matriz de requisitos.")
-
-st.markdown("### Turnos Deseados por Empleado:")
-if 'edited_desired_shifts_df' in st.session_state and not st.session_state['edited_desired_shifts_df'].empty:
-    st.dataframe(st.session_state['edited_desired_shifts_df'])
-else:
-    st.info("Completa la sección de turnos deseados por empleado (Sección 6) para ver esta tabla.")
-
-st.markdown("### Requisitos Totales de Empleados por Turno:")
-if 'edited_total_requirements_df' in st.session_state and not st.session_state['edited_total_requirements_df'].empty:
-    st.dataframe(st.session_state['edited_total_requirements_df'])
-else:
-    st.info("Completa la sección de requisitos totales de empleados por turno (Sección 7) para ver esta tabla.")
+#     if 'edited_total_requirements_df' in st.session_state and not st.session_state['edited_total_requirements_df'].empty:
+#         print("\n--- Requisitos Totales de Empleados por Turno ---")
+#         print(st.session_state['edited_total_requirements_df'])
+#     st.success("Tablas impresas en la consola. ¡Revisa tu terminal!")
+# # --- Fin de la impresión de tablas en la consola ---
 
 
-st.markdown("---")
-st.info("Guarda este código como un archivo `.py` y ejecútalo con `streamlit run tu_archivo.py`.")
+# # Visualización de las tablas en la interfaz de usuario de Streamlit
+# st.markdown("### Empleados Registrados:")
+# if 'employee_names' in st.session_state and st.session_state['employee_names']:
+#     st.dataframe(pd.DataFrame(st.session_state['employee_names'], columns=["Nombre del Empleado"]))
+# else:
+#     st.info("Por favor, ingresa los nombres de los empleados en la Sección 1.")
+
+# st.markdown("### Roles Registrados:")
+# if 'roles' in st.session_state and st.session_state['roles']:
+#     st.dataframe(pd.DataFrame(st.session_state['roles'], columns=["Nombre del Rol"]))
+# else:
+#     st.info("Por favor, ingresa los roles en la Sección 2.")
+
+# st.markdown("### Matriz de Habilidades (Asignación de Roles):")
+# if 'edited_assignment_df' in st.session_state and not st.session_state['edited_assignment_df'].empty:
+#     st.dataframe(st.session_state['edited_assignment_df'])
+# else:
+#     st.info("Completa la sección de asignación de roles (Sección 3) para ver la matriz de habilidades.")
+
+# st.markdown("### Preferencias de Horarios:")
+# if 'edited_availability_df' in st.session_state and not st.session_state['edited_availability_df'].empty:
+#     st.dataframe(st.session_state['edited_availability_df'])
+# else:
+#     st.info("Completa la sección de horarios disponibles (Sección 4) para ver las preferencias.")
+
+# st.markdown("### Requisitos de Roles por Turno:")
+# if 'edited_role_requirements_df' in st.session_state and not st.session_state['edited_role_requirements_df'].empty:
+#     st.dataframe(st.session_state['edited_role_requirements_df'])
+# else:
+#     st.info("Completa la sección de requisitos de roles por turno (Sección 5) para ver la matriz de requisitos.")
+
+# st.markdown("### Turnos Deseados por Empleado:")
+# if 'edited_desired_shifts_df' in st.session_state and not st.session_state['edited_desired_shifts_df'].empty:
+#     st.dataframe(st.session_state['edited_desired_shifts_df'])
+# else:
+#     st.info("Completa la sección de turnos deseados por empleado (Sección 6) para ver esta tabla.")
+
+# st.markdown("### Requisitos Totales de Empleados por Turno:")
+# if 'edited_total_requirements_df' in st.session_state and not st.session_state['edited_total_requirements_df'].empty:
+#     st.dataframe(st.session_state['edited_total_requirements_df'])
+# else:
+#     st.info("Completa la sección de requisitos totales de empleados por turno (Sección 7) para ver esta tabla.")
+
+
+# st.markdown("---")
+# st.info("Guarda este código como un archivo `.py` y ejecútalo con `streamlit run tu_archivo.py`.")
