@@ -19,6 +19,8 @@ st.markdown(
 unsafe_allow_html=True
 )
 
+st.markdown("Es mejor y mas comodo usar el sistema desde la computadora.")
+
 st.title("Sistema de Planificación de Turnos para tu Comercio")
 st.markdown("""
 El sistema esta destinado a comercios que trabajan todos los dias de la semana, con dos turnos por dia.
@@ -444,3 +446,4 @@ st.markdown("---")
 
 # st.markdown("---")
 # st.info("Guarda este código como un archivo `.py` y ejecútalo con `streamlit run tu_archivo.py`.")
+
